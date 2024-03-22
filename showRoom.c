@@ -41,16 +41,32 @@ void viewOne();  // 5
 void reviews();  // 6
 void exitProgram();  // 7
 
+void loadCarsFromFile(struct LinearNode **front, struct LinearNode **last);
+void saveCarsToFile(struct LinearNode *front);
+
+
+
+
+
 // Global variables
 struct LinearNode *front = NULL;  // Front of list
 struct LinearNode *last = NULL;  // Pointer to last node
 
-int main() {
-    menu();
+
+
+    int main() {
+        
+        loadCarsFromFile(&front, &last); 
+        
+        menu();
+
+    
 }
 
-void menu() {
+
+    void menu() {
     int option;
+    int i;
     printf("Welcome to the Showroom");
     printf("\n\tPlease pick an option");
     do {
@@ -104,6 +120,7 @@ void addCar() {
     // Allocate memory for a new car element
     anElement = (struct car *)malloc(sizeof(struct car));
 
+
     // Check if the front of the list is empty
     if (front == NULL) {
         // If empty, allocate memory for a new front node and set last to front
@@ -122,6 +139,7 @@ void addCar() {
     }
 
     last->next = NULL;  // Ensure the next pointer of the last node points to NULL
+
 
    
 
@@ -173,6 +191,8 @@ void addCar() {
 
      printf("Car added successfully!\n");
 
+    
+
      // Free memory for the new car element
     free(anElement);
 
@@ -187,12 +207,16 @@ void addCar() {
     scanf(" %c", &choice);
     if (choice == 'Y' || choice == 'y') {
         menu(); // Go back to the menu
+    } else {
+        exitProgram();
     }
 
 
 
  
 }
+
+
 
 void sellCar() {  // Delete
     
@@ -238,11 +262,13 @@ void sellCar() {  // Delete
     }
     printf("Error: Car with registration number %s not found.\n", plate); // If car not found
 
-      char choice;
+    char choice;
     printf("Do you want to go back to the menu? (Y/N): ");
     scanf(" %c", &choice);
     if (choice == 'Y' || choice == 'y') {
         menu(); // Go back to the menu
+    } else {
+        exitProgram();
     }
 }
 
@@ -307,11 +333,13 @@ void reserveCar() {
     }
     printf("Error: Car with registration number %s not found.\n", plate);
 
-      char choice;
+    char choice;
     printf("Do you want to go back to the menu? (Y/N): ");
     scanf(" %c", &choice);
     if (choice == 'Y' || choice == 'y') {
         menu(); // Go back to the menu
+    } else {
+        exitProgram();
     }
 }
 
@@ -341,11 +369,13 @@ void unreserveCar() {
     }
     printf("Error: Car with registration number %s not found.\n", plate);
 
-      char choice;
+   char choice;
     printf("Do you want to go back to the menu? (Y/N): ");
     scanf(" %c", &choice);
     if (choice == 'Y' || choice == 'y') {
         menu(); // Go back to the menu
+    } else {
+        exitProgram();
     }
 }
 
@@ -434,6 +464,8 @@ void unreserveCar() {
     scanf(" %c", &choice);
     if (choice == 'Y' || choice == 'y') {
         menu(); // Go back to the menu
+    } else {
+        exitProgram();
     }
 }
 
@@ -477,11 +509,13 @@ void viewOne() {
     // Car not found
     printf("Error: Car with registration number %s not found.\n", plate);
 
-      char choice;
+    char choice;
     printf("Do you want to go back to the menu? (Y/N): ");
     scanf(" %c", &choice);
     if (choice == 'Y' || choice == 'y') {
         menu(); // Go back to the menu
+    } else {
+        exitProgram();
     }
 }
 
@@ -498,7 +532,7 @@ void reviews() {
     struct LinearNode *current = front;
     while (current != NULL) {
         if (strcmp(current->element->make, make) == 0) {
-            // Car found, display its reviews
+            // Car found display its reviews
             printf("Reviews for cars of make %s:\n", make);
             if (current->element->prevOwners > 0) {
                 for (int i = 0; i < current->element->prevOwners; i++) {
@@ -519,10 +553,57 @@ void reviews() {
     scanf(" %c", &choice);
     if (choice == 'Y' || choice == 'y') {
         menu(); // Go back to the menu
+    } else {
+        exitProgram();
     }
 }
 
 void exitProgram() {
     printf("You have exited");
 }
+
+void loadCarsFromFile(struct LinearNode **front, struct LinearNode **last) {
+    FILE *file = fopen("car.dat", "r");
+    if (file == NULL) {
+        printf("No list of cars exists. You will need to input the cars.\n");
+        return;
+    }
+
+    struct car temp;
+    while (fread(&temp, sizeof(struct car), 1, file) == 1) {
+        struct LinearNode *newNode = (struct LinearNode *)malloc(sizeof(struct LinearNode));
+        newNode->element = (struct car *)malloc(sizeof(struct car));
+        memcpy(newNode->element, &temp, sizeof(struct car));
+        newNode->next = NULL;
+
+        if (*front == NULL) {
+            *front = *last = newNode;
+        } else {
+            (*last)->next = newNode;
+            *last = newNode;
+        }
+    }
+
+    fclose(file);
+    printf("System has been populated with cars from the data file.\n");
+}
+
+void saveCarsToFile(struct LinearNode *front) {
+    FILE *file = fopen("car.dat", "w");
+    if (file == NULL) {
+        printf("Error: Unable to open file for writing.\n");
+        return;
+    }
+
+    struct LinearNode *current = front;
+    while (current != NULL) {
+        fwrite(current->element, sizeof(struct car), 1, file);
+        current = current->next;
+    }
+
+    fclose(file);
+    printf("All cars have been copied back to the database.\n");
+}
+
+
 
